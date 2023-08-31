@@ -1,0 +1,55 @@
+%{
+open FSharp.Text.Parsing
+%}
+
+%token <int> INT
+%token <string> VAR
+%token <string> KEYWORD
+%token EOF
+%token EQ 
+%token LPAR RPAR 
+%token PLUS MINUS 
+%token TIMES 
+%token LET IN 
+%token SUM OF TO
+%token PROD MAX ARGMAX
+
+%nonassoc letprec
+%nonassoc inprec
+%left SUM PROD MAX ARGMAX
+%left LET IN TO OF EQ
+%left PLUS MINUS
+%left LTH
+%left TIMES
+%left LPAR RPAR
+%nonassoc INT VAR
+
+
+%start Prog
+%type <AbSyn.EXP> Prog
+%type <AbSyn.EXP> Exp
+
+%%
+
+Prog : Exp EOF { $1 }
+;
+
+Exp : INT            { AbSyn.CONSTANT (AbSyn.INT $1) }
+    | VAR            { AbSyn.VARIABLE $1 }
+    | LPAR Exp RPAR  { $2 }
+    | Exp PLUS Exp   { AbSyn.OPERATE (AbSyn.BPLUS, $1, $3) }
+    | Exp MINUS Exp  { AbSyn.OPERATE (AbSyn.BMINUS, $1, $3) }
+    | Exp TIMES Exp  { AbSyn.OPERATE (AbSyn.BTIMES, $1, $3) }
+    | LET VAR EQ Exp IN Exp
+                     { AbSyn.LET_IN ($2, $4, $6) }
+    | SUM VAR EQ Exp TO Exp OF Exp 
+                     { AbSyn.OVER (AbSyn.RSUM, $2, $4, $6, $8) }
+    | PROD VAR EQ Exp TO Exp OF Exp
+                     { AbSyn.OVER (AbSyn.RPROD, $2, $4, $6, $8)}
+    | MAX VAR EQ Exp TO Exp OF Exp
+                     { AbSyn.OVER (AbSyn.RMAX, $2, $4, $6, $8)}
+    | ARGMAX VAR EQ Exp TO Exp OF Exp
+                     { AbSyn.OVER (AbSyn.RARGMAX, $2, $4, $6, $8)}
+
+
+%%

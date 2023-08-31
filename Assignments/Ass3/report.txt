@@ -1,0 +1,247 @@
+Task 1.
+
+    while !(b = 0) && (1 < a/b) do {
+        if b < a then { a := a - b }
+                 else { b := b - a }
+    }
+
+ vtable = [a ↦ v0, b ↦ v1]
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	Pattern 		 				| 	Replacement
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+			 				|
+							|
+	LABEL while					|       while:				
+							|		
+	IF v1 = 0 THEN exit ELSE continue,		|		addi   t4, R0, 0
+							|		add    t5, R0, v1
+							|		beq    t5, t4, exit	# branch to 'exit' if b equals zero 
+	LABEL continue					|		
+							|	continue:			 
+							|
+	t0 := v0 / v1					|		div    t0, v0, v1 	# divide v0 by v1 
+							|				
+							|
+	t1 := 1						|		addi   t1, RO, 1		# assign 1 to variable t1 
+						        	|		
+							|
+	 						|
+	IF t1 < t0 THEN body ELSE exit,			|		slt    t2, t1, t0	# set t2 to 1 if 1 is less than the quotient, otherwise set it to 0 
+	LABEL body					|		beq    t2, RO, exit	# branch to 'exit' if 1 is not less than the quotient 
+							|						
+							|	body: 				
+							|
+							|		# Check if b < a
+	IF v1 < v0 THEN then ELSE else,			|		slt	t3, v1, v0	# set t3 to 1 if b is less than a, otherwise set it to 0 
+	LABEL then					|		beq	t3, R0, else	# branch to 'else' if b is not less than a 
+							|	
+							|	then:				 
+							|		# Check if b < a
+	v0 := v0 - v1					|		sub 	v0, v0, v1	# subtract the value of v1 from v0 and store the result in v0 
+							|
+	GOTO while					|		j	while		# unconditionally jump back to the 'while' label 
+							|
+	LABEL else					|	else:				
+							|
+							|		# Check if b >= a
+	v1 := v1 - v0					|		sub v1, v1, v0		# subtract the value of v0 from v1 and store the result in v1 
+							|
+	GOTO while					|		j	while		# unconditionally jump back to the 'while' label 
+							|
+	LABEL exit					|	exit:				# return b
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+Task 2.
+	 
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------									
+							|
+	Pattern						|	Replacement
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+							|
+	z := x ≥ y					|
+	  		                                 	|		slt	t, y, x			# set t to 1 if y < x, otherwise set it to 0 (5)
+					                 |		bne	t, R0, label_z		# if t != 0, then brach to lable 'z' (true)		
+							|			
+							|	continue:				# continue checking if x = y
+							|
+			                              	|		bne	x, y, label_not_z	# if x != y, then branch to label 'not_z'
+							|	label_z:
+							|		
+							|		addi	z, R0, 1			# z = true
+							|		j	after_z
+							|
+							|	label_not_z:
+							|
+							|		addi	z, R0, 0			# z = false 		
+							|
+							|	after_z:
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+							|
+	w := !z						|
+							|		beq	w, z, label_equal	# if w = z, then branch to label 'equal'
+							|
+							|	label_not_equal:
+							|
+							|		addi	w, R0, 1			# w = true 
+							|
+							|		j	after_w			# unconditionally jump to the 'after_w' label 
+							|	
+							|	label_equal:
+							|
+							|		addi	w, R0, 0			# w = false 	
+							|
+	         					|	after_w:	
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+							|
+	z := x ≥ y					|
+	w := ! z						|
+							|		slt	t, y, x			# set t to 1 if y < x, otherwise set it to 0 (5)
+							|		bne	t, R0, label_z		# if t != 0, then brach to lable 'z' (true)		
+							|			
+							|	continue:				# continue checking if x = y
+							|
+							|		bne	x, y, label_not_z	# if x != y, then branch to label 'not_z'
+							|	label_z:
+							|		
+							|		addi	z, R0, 1			# z = true 
+							|		j	after_z
+							|
+							|	label_not_z:
+							|
+							|		addi	z, R0, 0			# z = false 
+							|		j	after_z
+							|
+							|	after_z:
+							|
+							|		beq	w, z, label_equal	# if w = z, then branch to label 'equal'
+							|
+							|	label_not_equal:
+							|		
+							|		addi	w, R0, 1			# w = true 
+							|	
+							|		j	after_w			# unconditionally jump to the 'after_w' label 
+							|	
+							|	label_equal:
+ 							|
+							|		addi	w, R0, 0			# w = false 			
+							|
+							|	after_w:	
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+							|
+	z := x ≥ y					|
+	w := ! z^last					|
+							|		slt	t, y, x			# set t to 1 if y < x, otherwise set it to 0 (5)
+							|		bne	t, R0, label_not_equal	# if t != 0, then brach to lable_not_equal (true)		
+							|
+							|		addi	w, R0, 0		        # last_w = false (0)
+							|		j	after_w			# unconditionally jump to the 'after_w' label 
+							|
+							|	label_not_equal:
+							|
+							|		addi	w, R0, 1		        # last_w = true (1)
+							|		
+							|	after_w:	
+							|		
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Task 3.
+
+a.) Assuming that the length of array x is n, translate the call y = scan(myop, ne, x): (a*a→a) * a * [a] → [a]
+
+	
+
+	char* scan(bool (*myop)(bool, bool), bool ne, bool* x, int n) {
+		
+		char* y = (char*) malloc(n * 4); 				# allocate memory dynamically 
+		int i = 0;
+		bool acc = ne;
+
+		while(i < n) {
+	
+		   acc = myop(acc, x[i]);
+		   *((bool*)&y[i * 4]) = acc;				# cast a pointer to the i * 4-th byte in the y array to BOOL; dereference the casted pointer to BOOL value.
+		   i = i + 1;
+		}
+		return y;
+	}
+
+
+b.) Place the scan result (a pointer) in symbolic register regy and assume that:
+
+	- vtable is [x ↦ regx, ne ↦ regne]
+
+	- your code may use additional symbolic registers, such as regX to represent each C variable X, as well as temporaries regt1, regt2, etc. for holding intermediate calculation 
+	results that have no associated names in the C code.
+
+	- (physical) register Rhp is the heap pointer, holding the first address of non-allocated memory, and which must always stay word-aligned
+
+	- you have a RISC-V (pseudo)instruction that calls a function, e.g., res = CALL fname(arg1,…​,argn) calls the function named fname on the (list of) actual-argument registers 
+	arg1,…​,argn and places the result in register res.
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+		
+
+	char* y = (char*) malloc(n * 4); 		|  	lw	reglen, 0(regx)		# load the length of array Rx into register Rlen
+						|
+						|  	mv	regy, Rhp		# move the heap pointer Rhp into register regy for the allocation of memory of array y
+						|
+						|  	addi     reg1, reglen, 3		# for char/bool array x, calculate address to 4-byte boundary by rounding up
+
+						|	andi	reg1, reg1, -4		# for char/bool array x, calculate address to 4-byte boundary by rounding up
+						|
+						|  	add      Rhp, Rhp, reg1		# add the allocated length of memory to the heap pointer
+						|
+						| 	sw	reglen, 0(regy)		# save the length of array y into register reglen 
+	--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	int i = 0;				|  	addi     regix, regx, 4		# allocate size of 4 bytes to 0. index of x array (size of array is int = word = 4 byte) 
+						|
+						|  	addi     regiy, regy, 4		# allocate size of 4 bytes to 0. index of y array (size of array is int = word = 4 byte) 
+						|
+						|  	mv	regi, x0			# copy the value from register x0 to register Ri
+	--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	bool acc = ne;				|  	mv	regacc, x0		# copy the value from register x0 to register regacc
+	--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+						| loop_beg:
+						|
+						|	sub	reg1, regi, reglen	# subtract the value of register reglen from the value of register regi 
+	while(i < n) {				|
+						|	bgez	reg1, loop_end		# if the value of reg1 >= 0, branch to the label loop_end
+	--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+						|
+	   acc = myop(acc, x[i]);			|	regacc	= CALL myop(regne, reg1)	# call fun myop with the val of regne & register reg1 and save the result into regacc
+	--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+           *((bool*)&y[i * 4]) = acc;		|	sw	regacc, 0(regiy)		# save the value of regacc into array y with no offset
+						|	addi	regiy, regiy, 1		# move the pointer or index to the next element(1 byte large) in an array 
+	--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+				
+	   i = i + 1;				|	addi	regi, regi, 1		# iterate the val of regi by 1
+	}					|	j	loop_beg			# jump to the beginning of while-loop
+	--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	
+	return y;				| loop_end:
+						|
+						|	ret	regy			# return the pointer to the memory address of the array y, register y
+	--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+									
+								
+	
+						

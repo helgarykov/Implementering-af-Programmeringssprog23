@@ -1,0 +1,269 @@
+Task 1
+
+Collect accepting/rejecting states into initial groups:
+
+G1 = {s3}                               ACCEPTING
+G2 = {s1, s2, s4, s5, s6, s7, s8}       REJECTING
+
+Checking G1:
+
+G1  0   1
+---------
+s3  G2  G1
+
+Consistant, mark G1.                      ACCEPTING (SINGELTON NOT CHECK AGAIN)
+
+Checking G2:
+
+G2  0   1
+----------
+s1  G2  G2
+s2  G2  G1
+s4  G1  G2
+s5  G2  G2
+s6  G1  G2
+s7  G2  G2
+s8  G2  G1
+
+Inconsistent, remove G2 and split into:
+
+G3 = {s1, s5, s7}  (row G2 G2)          REJECTING
+G4 = {s2, s8}  (row G2 G1)              REJECTING
+G5 = {s4, s6}  (row G1 G2)              REJECTING
+
+and unmark everything.
+
+Checking G3:
+
+G3  0   1
+----------
+s1  G4  G5 
+s5  G4  G5
+s7  G3  G3
+
+Inconsistent, remove G3 and split into:
+
+G6 = {s1, s5}   (row G4 G5)             REJECTING START
+G7 = {s7}       (row G3 G3)             REJECTING 
+
+Checking G6:
+
+G6  0   1
+----------
+s1  G4  G5 
+s5  G4  G5
+
+Consistent, mark G6.    
+
+Checking G4:
+
+G4  0   1
+----------
+s2  G7  G1 
+s8  G7  G1
+
+Consistent, mark G4.
+
+Checking G5:
+
+G5  0   1
+----------
+s4  G1  G7 
+s6  G1  G7
+
+Consistent, mark G5.
+
+Check G1 again:
+
+G1  0   1
+----------
+s3  G6  G1
+
+Consistant, mark G1.
+
+Check G7 again:
+
+G7  0   1
+----------
+s7  G7  G6
+
+All non-singleton groups marked. Final DFA has 5 states:
+
+G1  0   1
+----------
+s3  G6  G1
+
+G4  0   1
+----------
+s2  G7  G1 
+s8  G7  G1
+
+G5  0   1
+----------
+s4  G1  G7 
+s6  G1  G7
+
+G6  0   1
+----------
+s1  G4  G5 
+s5  G4  G5
+
+G7  0   1
+----------
+s7  G7  G6
+
+
+Final DFA with consistent groups as states, collected from above:
+
+            0   1     kind
+--------------------------------------
+G1={s3}     G6  G1    ACCEPTING
+G4={s2,28}  G7  G1    REJECTING
+G5={s4,s6}  G1  G7    REJECTING
+G6={s1,s5}  G4  G5    REJECTING, START
+G7={s7}     G7  G6    REJECTING
+
+See the resulting DFA in Attached.pdf
+
+Task 2.
+
+a. Using the alphabet of decimal digits (0–9), 
+give regular expressions describing the following 
+languages. Also, briefly explain how/why your REs work.
+
+(i) "Proper" numbers (i.e., with no unnecessary leading zeros)
+ that are divisible by 5:
+
+Given the definition of Context-Free Grammar, we use 
+the alphabet {0, 1, 2, 3, 4, 5, 6, 7, 8, 9}, and assume 
+that the "proper" numbers cannot start with a 0 (except 
+for the number 0 itself), but must end with either 0 or 5 
+to be divisible by 5.
+
+Given this, we can define the CFG as follows:
+
+Terminal symbols: Big Sigma = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
+
+Nonterminal symbols: N = {S, A}
+
+Start symbol: S
+
+Productions (P):
+
+S -> 0 | 5 | A5 | A0
+A -> 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 1A | 2A | 3A | 4A | 5A | 
+6A | 7A | 8A | 9A        
+
+(A generates numbers from 1 to 9 without leading zeros)
+
+This language can be covered by a regular expression:
+
+0 | 5 | [1-9][0-9]* [50]  
+
+("[1-9][0-9]*5" accounts A5 production in the grammar 
+"[1-9][0-9]*0" accounts A0 production in the grammar)
+
+(ii) Numbers (not necessarily proper) in which digit 5 occurs 
+exactly three times:
+
+S ->   0S | 1S | 2S | 3S | 4S | 6S | 7S | 8S | 9S | 5S1
+S1 -> 0S1 | 1S1 | 2S1 | 3S1 | 4S1 | 6S1 | 7S1 | 8S1 | 9S1 | 5S2
+S2 -> 0S2 | 1S2 | 2S2 | 3S2 | 4S2 | 6S2 | 7S2 | 8S2 | 9S2 | 5S3
+S3 -> 0S3 | 1S3 | 2S3 | 3S3 | 4S3 | 6S3 | 7S3 | 8S3 | 9S3 | ε
+
+This language can be covered by the regular expression:
+
+[0-4 6-9]* 5 [0-4 6-9]* 5 [0-4 6-9]* 5 [0-4 6-9]*
+
+
+(iii)  Numbers satisfying both (i) and (ii):
+
+S ->   1S | 2S | 3S | 4S | 6S | 7S | 8S | 9S  | 5S1
+S1 -> 0S1 | 1S1 | 2S1 | 3S1 | 4S1 | 6S1 | 7S1 | 8S1 | 9S1 | 5S2
+S2 -> 0S2 | 1S2 | 2S2 | 3S2 | 4S2 | 6S2 | 7S2 | 8S2 | 9S2 | 5S4
+S4 -> S3 | ε
+S3 -> 0S3 | 1S3 | 2S3 | 3S3 | 4S3 | 6S3 | 7S3 | 8S3 | 9S3 | S5
+S5 -> 0
+
+This language can be covered by the regular expression:
+
+[1-4 6-9]* 5 [0-4 6-9]* 5 [0-4 6-9]* 5 ([0-4 6-9]* 0)?
+
+(Where the last "5 ([0-4 6-9]* 0)?" ensures that reg exp ends with 5 or 0.)
+
+
+b. Are the following languages over the alphabet of decimal digits regular? 
+Give short convincing reasons for your answers:
+
+(i) Numbers (not necessarily proper) that contain digit 1 exactly as many times as digit 2:
+
+No, such language (Big Sigma = {0,1,2,3,4,5,6,7,8,8}) cannot be described with regular expressions, 
+it may contain an infinite number of decimal digits [3-9 0], an infinite number of
+1s and 2s and an infinite numeber of combinations of both [3-9 0], 1 and 2.
+In other words, we cannot keep track of the number of 1s or 2s.
+
+
+//Der kan være vilkårligt mange [3-9 0] decimal digits og vilkårligt mange 1 og 2 taller 
+og der kan være vilkårligt mange kombinationer af dem. Så er det svært at matche alle disse mulighder
+til konkrete regler, fordi vi vil ikke kunne kontrolere antallet af 1'er efterfulgt af
+eller 2'er eller antallet af 2'er preceded by 1'er.//
+
+(ii) Numbers (not necessarily proper) less than 1,000,000, that contain digit 1 exactly as many times as digit 2.
+
+Yes, this language would be posiible to cover with a regular expression, because
+we are having a limited number of cases described above. Yet, it would still be a 
+terribly long regular expression to cover all possible cases.
+
+
+Task 3.
+
+Ambiguous grammar
+-----------------
+
+B -> B && B
+B -> B || B
+B -> ( B )
+B -> true
+B -> false
+
+Unambiguous grammar
+-------------------
+
+B -> B' && B | B'
+B -> B || B' | B'
+B' -> ( B )
+B' -> true
+B' -> false 
+
+'Since && and || have different associativity, they canno be placed on the same level.
+
+Task 4. 
+
+E -> E E +
+E -> E E *
+E -> num
+
+a. Eliminate Left-Recursion in the grammar above:
+
+I am not sure how to do that:
+
+E  ->  * E' E' 
+E' ->  + E' E'| num | ε
+ 
+E  ->  num 
+E  ->  E E * E'
+E' ->  E E + E' | ε
+
+b. Do Left Factorization of the grammar obtained in question (a):
+
+I cannot see identical prefixes in the grammar in a.
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,21 @@
+# Feedback
+
+Todo for resubmission:
+  - Fix task 1
+  - Fix task 2
+  
+General comments:
+I find the two-colum approach very hard to read (especially when the seperator is inconsistent)
+
+Task 1:
+I do not see how you got the IL code by following the translation table. Make sure not to optimize it in any way.
+The machine code seems to be a correct translation of the IL.
+
+Task 2:
+Consider reversing the order of rules in the table, as the first rule overshadows the last two.
+In general these patterns should be able to be written in a shorter way and without branching.
+The second rule should make w the logical opposite of z (if z is 0 then w is set to 1, otherwise its set to 0)
+
+Task 3:
+a. You are allocating too much space, each element is only a single byte in this case.
+b. Correct translation of C code in a.

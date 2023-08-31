@@ -1,0 +1,22 @@
+fun int mul(int x, int y) =
+    if y == 1 then x                        
+    else if y == (0 - 1) then (0 - x)       
+    else if y < 0 then mul(x, y+1) - x     
+    else x + mul(x, y-1)  
+
+fun int testMul(int i) =
+    if i == 0 then
+         0
+    else 
+        let n1 = read(int) in  
+        let n2 = read(int) in
+        let result = write(mul(n1,n2)) in
+        testMul(i-1)
+
+fun int main() =
+    let result = testMul(5) in
+    0
+    
+   
+    
+

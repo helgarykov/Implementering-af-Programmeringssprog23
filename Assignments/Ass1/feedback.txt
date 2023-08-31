@@ -1,0 +1,21 @@
+# Overall
+
+You should not submit the entire Fasto compiler in future submissions.
+Todo for resubmission:
+  - Fix max/argmax
+
+# Task 1
+
+Ok.
+
+# Task 2
+
+Impressive tail-recursive implementation of ranges! 
+It is a valid thing to have mentioned when discussing performance.
+
+max/argmax should give an error when the upper bound is lower than the lower bound.
+  fx 'max x=6 to 5 of x+x'
+
+# Task 3
+
+Ok. (Your error reporting has sligthly incorrect capitalizaion which is messing with our tests)

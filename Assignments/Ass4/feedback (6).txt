@@ -1,0 +1,28 @@
+# Feedback
+
+Todo for resubmission:
+  - Fix task 1
+  - Fix task 2
+  - Fix task 3
+
+General comments:
+
+Task 1:
+You are forgetting to add/remove UV's in some cases.
+Notably 1, 5, 9, 10, 11
+
+This probably messes with your elim in 10. (And OE in 10 and 11)
+
+Task 2:
+b. 'b' should still be in in[9] in first iteration.
+   (And everything before that will change a bit because of this)
+c. Slightly changed by fault in b
+
+Rest is correct.
+
+Task 3:
+The first part of the regex should be parsed as ((a*b)|a)*, 
+otherwise this would be correct.
+
+Task 4:
+Correct.

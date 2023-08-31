@@ -1,0 +1,38 @@
+fun int mul(int x, int y) =
+    if y == 1 then x                        
+    else if y == (0 - 1) then (0 - x)       
+    else if y < 0 then mul(x, y+1) - x     
+    else x + mul(x, y-1)                    
+
+// declare a top-level fun som en wrapper for special case fun read()
+fun int readInt(int i) = read(int)          
+
+fun int potensPlus(int a, int b) = a + mul(b, b) 
+
+// N: indeces from 0 to n-1
+// finds dif between the two neighbouring elements
+fun int main() =
+    let n = read(int) in                 
+    if n < 1 then 
+        let out = write("Incorrect input!") in
+        0
+    else 
+        let N = iota(n) in  
+        // arr = [3, 7, 2, 4]                
+        let arr = map(readInt, N) in        
+        let difs = map(fn int (int i) => 
+            if i == 0 then 
+                arr[0]
+            else
+                arr[i] - arr[i-1], N) in      
+        let result = reduce(potensPlus, 0, difs) in
+        let w = write(result) in
+        result
+
+        
+        
+    
+  
+// Mul tests
+// Input
+//

@@ -1,0 +1,149 @@
+Task 1.
+
+    while !(b = 0) && (1 < a/b) do {
+        if b < a then { a := a - b }
+                 else { b := b - a }
+    }
+
+ vtable = [a ↦ v0, b ↦ v1]
+
+label1: start_while
+label2: body_while
+label3: exit_while
+label4: continue Exp && Exp
+label5: then
+label6: else
+ ------------------------------------------
+ |   IL              |      MIPS          |
+ ------------------------------------------
+ | LABEL label1      |  label1:           |
+ | t0 := 0           |  addi t0, R0, 0    |
+ | t1 := v1          |  add  t1, R0, v1   |
+ | t2 := v0          |  add  t2, R0, v0   |
+ | IF t1 != t0 THEN  |  beq  t1, t0, label3    
+ | label4 ELSE label3|                    |
+ | LABEL label4      |  label4:           |
+ |                   |                    |
+ | t3 := 1           |  addi t3, t0, 1    |  
+ | t4 := v0   	     |	add  t4, t0, v0   |
+ | t5 := v1		     |  add	 t5, t0, v1
+ | t6 := t4 / t5     |  div  t6, t4, t5   |
+ | IF t3 < t6 THEN   |  slt  t7, t3, t6   |
+ | label2 ELSE label3|  beq  t7, t0, label3
+ |                   |                    |
+ | LABEL label2      |  label2:           |
+ |                   |                    |
+ | IF t1 < t2 THEN   |  slt  t8, t1, t2   |
+ | label5 ELSE label6|  beq  t8, t0, label6
+ |                   |                    |
+ | LABEL label5      |  label5:           |
+ |                   |                    |
+ | t9 := v0			 |	add	 t9, t0, v0   |
+ | t10 := v1		 |	add  t10, t0, v1  |
+ | v0 := t9 - t10    |  sub  v0, t9, t10  | 
+ | GOTO label1       |  j    label1       |
+ | LABEL label6      |  label6:           |
+ |                   |                    |
+ | t11 := v1		 |  add  t11, t0, v1  |
+ | t12 := v0		 |  add  t12, t0, v0  |
+ | v1 := t11 - t12   |  sub  t1, t11, t12 |
+ | GOTO label1       |  j    label1       |
+ | LABEL label3      |  label3:           |
+ ------------------------------------------
+
+ Task 2.
+ Consider reversing the order of rules in the table, as the first rule overshadows the last two.
+ In general these patterns should be able to be written in a shorter way and without branching.
+ The second rule should make w the logical opposite of z (if z is 0 then w is set to 1, otherwise its set to 0)
+
+ ------------------------------------
+ | z := x ≥ y       |  addi  t1, x, 1       // If x = MAX (overflow):                                           
+ |                  |  slt   z, y, t1       // addi  t1, x, 1 // slt  t2, t1, x // slt   z, y, t1 // OR z, t2, z                              
+ ------------------------------------
+ | w := !z	        |  slt  t0, z, Rzero    // Check if z < 0
+                    |  slt  t1, Rzero, z    // Check if 0 < z
+                    |  or   z, t0, t1       // Save in z either t1 or t0
+                    |  xori  w, z, 1        // Compute the logical opposite of z and store the result in w                                
+ ------------------------------------    
+ | z := x ≥ y       |  slt   w, x, y        // Check if x < y and store the result in w
+ | w := !z          |  xori  z, w, 1        // Compute the logical opposite of w and store the result in z    
+ ------------------------------------
+ | z := x ≥ y       |  slt   w, x, y
+ | w := ! z^last    |                          // the value of z is overwritten by the XORI
+ ------------------------------------
+
+
+Task 3
+
+a. Assuming that the length of array x is n, translate the call 
+y = scan(myop, ne, x): (a*a→a) * a * [a] → [a]
+
+
+	char* scan(bool (*myop)(bool, bool), bool ne, bool* x, int n) {
+		
+		char* y = (char*) malloc(n * 1); 				# allocate memory dynamically 
+		int i = 0;
+		bool acc = ne;
+
+		while(i < n) {
+	
+		   acc = myop(acc, x[i]);
+		   *((bool*)&y[i * 1]) = acc;				    # cast a pointer to the i * 4-th byte in the y array to BOOL; dereference the casted pointer to BOOL value.
+		   i = i + 1;
+		}
+		return y;
+	}
+
+
+b. Place the scan result (a pointer) in symbolic register regy and assume that:
+
+	- vtable is [x ↦ regx, ne ↦ regne]
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+		
+
+	char* y = (char*) malloc(n * 1) 		|  	lw	    reglen, 0(regx)		    # load the length of array Rx into register Rlen
+					                    	|
+						                    |  	mv	    regy, Rhp		        # move the heap pointer Rhp into register regy for the allocation of memory of array y
+						                    |
+						                    |  	addi    reg1, reglen, 3	        # for char/bool array x, calculate address to 4-byte boundary by rounding up
+                                            |
+						                    |	andi	reg1, reg1, -4		    # for char/bool array x, calculate address to 4-byte boundary by rounding up
+						                    |
+						                    |  	add     Rhp, Rhp, reg1		    # add the allocated length of memory to the heap pointer
+						                    |
+						                    | 	sw	    reglen, 0(regy)		    # save the length of array y into register reglen 
+	--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	int i = 0				                |  	addi     regix, regx, 4		    # allocate size of 4 bytes to 0. index of x array (size of array is int = word = 4 byte) 
+						                    |
+						                    |  	addi     regiy, regy, 4		    # allocate size of 4 bytes to 0. index of y array (size of array is int = word = 4 byte) 
+						                    |
+						                    |  	mv	     regi, x0			    # copy the value from register x0 to register Ri
+	--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	bool acc = ne			            	|  	mv	    regacc, x0		        # copy the value from register x0 to register regacc
+	--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	while(i < n) 					        |   loop_beg:
+						                    |
+						                    |	sub	    reg1, regi, reglen	    # subtract the value of register reglen from the value of register regi 
+	            			            	|
+						                    |	bgez	reg1, loop_end		    # if the value of reg1 >= 0, branch to the label loop_end
+	--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+						                    |
+	acc = myop(acc, x[i])			        |	regacc	= CALL myop(regne, reg1)	# call fun myop with the val of regne & register reg1 and save the result into regacc
+	--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+    *((bool*)&y[i * 1]) = acc	           	|	sw	    regacc, 0(regiy)		# save the value of regacc into array y with no offset
+						                    |	addi	regiy, regiy, 1		    # move the pointer or index to the next element(1 byte large) in an array 
+	--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+				
+	i = i + 1				                |	addi	regi, regi, 1		    # iterate the val of regi by 1
+						                    |	j	    loop_beg			    # jump to the beginning of while-loop
+	--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	
+	return y				                |   loop_end:
+						                    |
+						                    |	ret	    regy			        # return the pointer to the memory address of the array y, register y
+	--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

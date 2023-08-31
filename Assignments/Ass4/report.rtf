@@ -1,0 +1,172 @@
+Task 1
+
+a. (11)let x = (1)u in (10)let y = (2)x+x in (9)let y = (5)(let x = (3)foo(x) in (4)7) in (8)let t = (6)x+u in (7)y*x
+
+foo might contain I/O
+-------------------------------------------------
+n     IO      Elim    UV                      OE
+-------------------------------------------------------------------------------------------------
+1     no      -       {u}                     u
+2     no      -       {x}                     x+x
+3     yes     -       {x}                     foo(x)
+4     no      -       {}                      7
+5     yes     no      {x}∪({}\{x})={x}        let x = foo(x) in 7
+6     no      -       {x,u}                   x+u
+7     no      -       {y,x}                   y*x
+8     no      yes     {x,y}∪({x}\{u}) = {x,y} y*x
+9     yes     no      {x}∪{x,y\{y}} = {x}     let y = (let x = foo(x) in 7) in y*x    
+10    yes     yes     {x}                     let y = (let x = foo(x) in 7) in y*x
+11    yes     no      {u}∪{x\x} = {u}         let x = u in let y = (let x = foo(x) in 7) in y*x
+
+Task 2
+
+a.
+                                            -----------------------------------
+   gcd(a,b)                                 | i | succ[i] | gen[i] | kill[i]  |
+                                            -----------------------------------
+1:  LABEL start                             | 1 |   2     |        |           |
+2:  IF a < b THEN next ELSE swap            | 2 |   7,3   | a,b    |           |
+3:  LABEL swap                              | 3 |   4     |        |           |
+4:  t := a                                  | 4 |   5     |  a     |    t      |               
+5:  a := b                                  | 5 |   6     |  b     |    a      |
+6:  b := t                                  | 6 |   7     |  t     |    b      |
+7:  LABEL next                              | 7 |   8     |        |           |
+8:  z := 0                                  | 8 |   9     |        |    z      |
+9:  b := b mod a                            | 9 |   10    | b, a   |    b      |
+10: IF b = z THEN end ELSE start            | 10|   11,1  | b,z    |           |
+11: LABEL end                               | 11|   12    |        |           |
+12: RETURN a                                | 12|         | a      |           |
+                                            ------------------------------------
+    
+b.
+
+--------------------------------------------------------------------------------------
+| i  |  Initial         |  Iteration 1     |    Iteration 2      |   Iteration 3     |
+|    |  out[i] | in[i]  |  out[i] | in[i]  |    out[i] | in[i]   |   out[i] | in[i]  |
+--------------------------------------------------------------------------------------
+| 1  |                  |  b,a  |   b,a    |  b,a      | b,a     |  b,a     |  b,a   |
+| 2  |                  |  b,a  |   b,a    |  b,a      | b,a     |  b,a     |  b,a   |
+| 3  |                  |  b,a  |   b,a    |  b,a      | b,a     |  b,a     |  b,a   |
+| 4  |                  |  t,b  |   b,a    |  t,b      | b,a     |  t,b     |  b,a   |
+| 5  |                  |  a,t  |   t,b    |  a,t      | t,b     |  a,t     |  t,b   |
+| 6  |                  |  a,b  |   a,t    |  a,b      | a,t     |  a,b     |  a,t   |
+| 7  |                  |  a,b  |   a,b    |  a,b      | a,b     |  a,b     |   a,b  |
+| 8  |                  | b,z,a |   a,b    |  a,z,b    | a,b     |  a,z,b   |   a,b  |
+| 9  |                  | a,b,z |   z,a,b  |  a,b,z    | a,z,b   |  a,b,z   |  a,z,b |
+| 10 |                  |   a   |   b,z,a  |  a,b      | a,b,z   |  a,b     |  a,b,z |
+| 11 |                  |   a   |    a     |     a     |    a    |   a      |   a    |
+| 12 |                  |   a   |    a     |     a     |    a    |   a      |   a    |
+--------------------------------------------------------------------------------------
+
+c.
+Show the interference table (which documents the interference relation for each assignment instruction).
+
+------------------------------------
+| i | kill[i] | out[i] |Interferes |
+ -----------------------------------
+| 4 |   t     |  t,b   |    b      |    // t interfers ikke med sig selv         
+| 5 |   a     |  a,t   |    t      |    
+| 6 |   b     |  a,b   |    a      |     
+| 8 |   z     |  a,z,b |    a,b    |
+| 9 |   b     | a,b,z  |    z,a    |    
+ -----------------------------------
+
+
+d. See attached Task2_Grafer.pdf
+
+ t interfers with  b
+ a interferes with t
+ z interfers with  a,b
+ b interfers with  z,a
+
+ e. Color the interference graph with 3 colors (cf. attached Task2&3_Grafer.pdf). 
+ 
+ Show the stack.
+
+ ------------------------------------
+ | Node |   Neighbours  |  Colour   |
+ ------------------------------------
+ |  b   |               |   Green   |
+ |  a   |      b        |   Red     |
+ |  t   |     a,b       |   Blue    |
+ |  z   |     a,b       |   Blue    | 
+ ------------------------------------    
+
+ f. Color the interference graph with 2 colors (cf. attached Task2&3_Grafer).
+
+  Show the stack.
+
+ ------------------------------------
+ | Node |   Neighbours  |  Colour   |
+ ------------------------------------
+ |  b   |               |   Green   |
+ |  a   |      b        |   Red     |
+ |  t   |     a,b       |   spill   |
+ |  z   |     a,b       |   spill   | 
+ ------------------------------------   
+
+Perform the spilling transformation and show the resulted program after spilling.  
+
+   gcd(a,b)                                
+                                           
+1:  LABEL start                            
+2:  IF a < b THEN next ELSE swap            
+3:  LABEL swap                            
+4:  t1 := a
+    M[address_t] := t1            // store t1 from register into memory                                                
+5:  a := b 
+    t2 := M[address_t]            // load from memory and save into register                               
+6:  b := t2                       // t is read                                 
+7:  LABEL next                              
+8:  z1 := 0    
+    M[address_z] := z1            // store z1 from register into memory                          
+9:  b := b mod a  
+    z2 := M[address_z]            // load from memory and save into register z2                  
+10: IF b = z2 THEN end ELSE start            
+11: LABEL end                              
+12: RETURN a        
+
+
+Task 3 
+
+Draw NFA for (a*b|a)*(b|ε) (cf.attached Task2&3_Grafer).
+
+// Preanalysis: NFA might contain 12 nodes.
+
+
+Task 4
+
+Transform NFA to DFA using subset construction:
+
+
+ec({1}) = {1, 2, 4} =: s0                                           REJ         // 6 er ikke med
+
+move(s0,a) = ec({3, 4}) = {3, 4, 6} =: s1                           ACC         // 6 er med
+
+move(s0,b) = ec({5}) = {5, 4, 6}  = {4, 5, 6} =: s2                 ACC         // 6 er med
+
+move(s1,a) = ec({4}) =: s3                                          REJ         // 6 er ikke med
+
+move(s1,b) = ec({3, 5}) = {3, 5, 6, 4, 6} = {3, 4, 5, 6} =: s4      ACC         // 6 er med
+
+move(s2,a) = ec({4}) =: s3                                          REJ         // 6 er ikke med
+
+move(s2,b) = ec({5}) =: s2                                          REJ         // 6 er ikke med
+
+move(s3,a) = ec({4}) =: s3                                          REJ         // 6 er ikke med
+
+move(s3,b) = ec({5}) =: s2                                          REJ         // 6 er ikke med
+
+move(s4,a) = ec({4}) =: s3                                          REJ         // 6 er ikke med
+
+move(s4,b) = ec({3, 5}) =: s4                                       ACC         // 6 er med
+
+
+See the graf of the resulting DNA in Task2&3_Grafer.
+
+
+
+                                           
+
+
+ 

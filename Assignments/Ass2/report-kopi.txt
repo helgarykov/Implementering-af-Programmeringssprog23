@@ -1,0 +1,229 @@
+Task 1.
+
+1)
+
+For the alphabet Σ = {o,g}, write regular expressions for the following languages:
+
+a. Strings of an even length:
+
+	((o|g)(o|g))*
+
+-- fst (o|g) matches either 'o' or 'g'; snd (o|g) matches 'o' or 'g'.
+-- the repetition of the fst parenthesis ensures string of even length
+-- * the preceding expression occurs zero or more times.
+-- * the "ohe preceding expression occurs zero or more times.
+
+b. Strings of an even length, whose first character is 'o' (so, in particular, the length cannot be zero):
+
+	o(o|g) ((o|g)(o|g))*
+
+-- o stands for the 1st character 'o'.
+-- (o|g) stands for snd character 'o' or 'g'.
+-- ((o|g)(o|g)) stands for 3rd and 4th character and secures even length of all strings
+-- * zero or more combinations of '(o|g)' and '(o|g)'. 
+
+c. Strings of an even length, in which all the 'o’s (if any) come before all the 'g’s (if any):
+
+	 (oo)* (og|ε)(gg)* 
+
+-- (og)* matches any number of repetitions of the subexpression (og) and allows any number of 'o's to be followed by any number of 'g's.
+-- (oo|gg) matches either "oo" or "gg" and stands for the rest of the characters after all 'o's and 'g's.
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------
+2)
+
+ For the alphabet Σ = {a,b,c}, write context-free grammars for the following languages:
+
+a. {a^n c^m b^n | n ≥ 0, m ≥ 1}, i.e., the language in which words start and end with an equal (possibly 0) number of consecutive 'a' and 'b' 
+characters, respectively, and in the middle they have one or more consecutive 'c' characters, e.g., aaaccbbb.
+
+Rules for Deriving Words
+
+S is the start symbol
+
+S  -> aSb | C	(1)	generates words that start and end with an equal (possibly 0) number of consecutive 'a' and 'b' characters, respectively. 
+			It uses recursion to allow for any number of 'a's followed by 'b's. Alternatively, it can generate words with only 'c' characters 
+			by deriving the non-terminal symbol C.
+
+C  -> cC | c	(2)	generates one or more consecutive 'c' characters in the middle of the word.
+
+
+
+
+b. {a^n b^2n | n ≥ 1}, i.e., one or more 'a’s, followed by exactly twice as many 'b’s, e.g., aabbbb.
+
+Rules for Deriving Words
+
+S is the start symbol
+
+S -> aSbb	(1)	generates words that start with 'a's followed by twice as many 'b´s.
+
+S -> abb		(2)	generates a b b
+
+
+
+c. {a^n b^m | n ≥ 0, m ≤ n}, i.e, any number of 'a’s followed by as many, or fewer, 'b’s., e.g., aaaaabbb.
+
+Rules for Deriving Words
+
+S is the start symbol
+
+S -> aSb		(1)	generates words that start with 'a's followed by 'b´s.
+
+S -> aS		(2)	generates 'a's without any following 'b's.
+
+S -> ε		(3)	generates no 'a's or 'b's.
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+3)
+
+a.  "%nonassoc letprec" specifies a new precedence level called "letprec" and says that the "let" operator has no associativity. And if there are multiple nested "let" expressions in an expression, their evaluation order should be determined based on the specific rules defined in the grammar — not associativity.
+
+If "%nonassoc letprec" is omitted, then that implies that the token "letprec" inherits the associativity of the previous declaration. If there's no previous declaration, then its associativity would be set to the default one used by the actual parser generator configuration. Usually, if "%nonassoc letprec" is omitted, "letprec" would typically be treated as having left associativity by default.
+
+If we omit "%nonassoc letprec", it wouldn't affect the expected parse of the let-expression because the associativity and precedence of the infix operators fx + or - would be determined by the other declared precedence rules. 
+
+
+b. If "%nonassoc letprec" is put between the 2 %left declarations as in:
+
+%left DEQ LTH 
+%nonassoc letprec
+%left PLUS MINUS
+
+The let-operator would have lower precedence than PLUS and MINUS but higher precedence than DEQ and LTH. 
+Fx the let-expression  "let x = 2 + 3 in x < 4" will be parsed incorrectly:
+
+
+	"(let x = 2 + 3 in x) < 4" because the let operator would have a higher precedence than the LTH-operator 
+	and since let-binding does not produce any result (it's not a variable like x is), the comparison of 4 and gibberish would produce gibberish.
+
+
+c. What are each of the following: $1, fst $2, $3, $4, $6, Dec, and Let mean?
+
+In Exp :   ...
+      | LET ID EQ Exp IN Exp %prec letprec
+          { Let (Dec (fst $2, $4, $3), $6, $1) }
+
+The code between {…​} constructs an abstract syntax tree (AST) node representing a let-expression:
+
+	1. $1: Stands for the value of the first subexpression, which corresponds to the LET token.
+
+	2. fst $2: Extracts the first component (fst) from the semantic value associated with the second subexpression, $2. Here, it extracts the string representing the identifier 		from the ID token.
+
+	3. $3:  Stands for the value of the third subexpression, which corresponds to the EQ token.
+
+	4. $4:  Stands for the value of the fourth subexpression, which corresponds to the Exp to the right of the EQ symbol.
+
+	5. $6:  Stands for the value of the sixth subexpression, which corresponds to the Exp after the IN-keyword.
+
+	6. Dec: Refers to the constructor or function that constructs a declaration in the abstract syntax tree (AST). 
+
+	7. Let: Refers to the constructor or function that constructs a let-expression in the AST. It takes three arguments: the declaration (constructed using Dec), the expression after the IN keyword ($6), and the LET token ($1).
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+Task 3.
+
+a.
+
+The type signature for the filter function can be written as follows using universal quantifiers:
+
+	filter: for all alfa ((alfa -> bool) * [alfa]) -> [alfa]
+
+ 
+For any type alfa, filter takes a predicate function of type (alfa -> bool) and an array of type [alfa] and returns a new array of type [alfa].
+
+
+
+b. Pseudocode of filter function:
+
+	CheckExp(Exp, vtable, ftable) = case Exp of
+  	   
+	   filter (id, Exp_arr) =
+
+	       [t1] = CheckExp (Exp_arr, vtable, ftable)	//returns the type of array (type 1)
+	    
+                t_fun = lookup(ftable, getname(id))
+	     
+                if t_fun = (t1) -> Bool
+		  then [t1]
+	        else 
+		  error() 
+		   
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Task 4.
+
+Expression 1: list(int) * list(alpha)
+
+	   *
+          /   \
+   list(int) list(alpha)
+
+
+Expression 2: alpha * beta
+	
+	    *
+          /   \
+        alpha beta
+
+We apply unification algorithm:
+
+1. We apply rule (IV): both root nodes are the same type constructor (product types), we unify their children.
+
+2. The left children of both expressions are list(int) and alpha, respectively. We apply rule (III) because 
+list(int) is not a type variable, but alpha is. So, we unify them, alpha = list(int).
+
+After the unification, we have 
+Expression 1: 
+
+            *
+          /   \
+     list(int) list(list(int))
+
+Expression 2: list(int) * beta    
+
+	   *
+          /   \
+     list(int) beta
+
+
+Now we apply unification algorithm to the right children of Exp1 and Exp2: list(list(int)) and beta.
+
+1. We apply rule(III) because list(alpha) is not a type variable, but beta is. So, we unify them, beta = list(list(int)).
+
+After the unification, we have 
+
+Expression 1: 
+
+            *
+          /   \
+     list(int) list(list(int))
+
+And Expression 2: 
+
+            *
+          /   \
+     list(int) list(list(int))
+
+
+Now both expressions have the same structure and types. 
+After unification, alpha is list(int), beta is list(list(int)), and the unified type for both expressions is 
+
+	list(int) * list(list(int))
+
+
+
+		
+
+
+
+
+
+
+
+
+|
